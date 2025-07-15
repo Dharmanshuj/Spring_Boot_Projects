@@ -2,6 +2,7 @@ package com.practice.companies.companies.Service;
 
 import com.practice.companies.companies.DTO.DTOUtility;
 import com.practice.companies.companies.DTO.ProductDTO;
+import com.practice.companies.companies.DTO.ProductWithItemSummary;
 import com.practice.companies.companies.Entity.Company;
 import com.practice.companies.companies.Entity.Product;
 import com.practice.companies.companies.ExectionHandling.NotFoundException;
@@ -76,18 +77,27 @@ public class ProductService {
         Map<Integer, Company> companyMap = companyRepository.findAllByIdInAndStatusTrue(companyIds).stream()
                 .collect(Collectors.toMap(Company::getId, c -> c));
 
-        List<Integer> missingProducts = dtos.stream().map(ProductDTO::getId).filter(id -> !productMap.containsKey(id)).toList();
-        if(!missingProducts.isEmpty()) {
+        List<Integer> missingProducts = productIds.stream()
+                .filter(id -> !productMap.containsKey(id)).toList();
+        if (!missingProducts.isEmpty()) {
             throw new NotFoundException("Products not found with IDs: " + missingProducts);
         }
 
-        List<Integer> missingCompany = dtos.stream().map(ProductDTO::getCompanyId).filter(id -> !companyMap.containsKey(id)).toList();
-        if(!missingCompany.isEmpty()) {
-            throw new NotFoundException("Companies not found with IDs: " + missingCompany);
+        List<Integer> missingCompanies = companyIds.stream()
+                .filter(id -> !companyMap.containsKey(id)).toList();
+        if (!missingCompanies.isEmpty()) {
+            throw new NotFoundException("Companies not found with IDs: " + missingCompanies);
         }
 
         List<Product> updates = dtos.stream().map(dto -> {
-            return productMap.get(dto.getId());
+            Product existing = productMap.get(dto.getId());
+            Company company = companyMap.get(dto.getCompanyId());
+
+            Product updated = mapper.toProductEntity(dto, company);
+            updated.setId(existing.getId());
+            updated.setCreatedDate(existing.getCreatedDate());
+
+            return updated;
         }).toList();
 
         return productRepository.saveAll(updates).stream().map(mapper::toProductDTO).toList();
@@ -118,8 +128,11 @@ public class ProductService {
         productRepository.saveAll(products);
     }
 
-    public List<ProductDTO> getProductsByCompany(Integer companyId) {
-        return productRepository.findAllByCompanyIdAndStatusTrue(companyId).stream()
-                .map(mapper::toProductDTO).toList();
+    public List<ProductWithItemSummary> productWithItems(Integer id) {
+        List<Product> products = productRepository.findAllByCompanyIdAndStatusTrue(id);
+        if(products.isEmpty()) {
+            throw new NotFoundException("No Company found with ID: " + id);
+        }
+        return products.stream().map(mapper::toProductWithItemSummary).toList();
     }
 }

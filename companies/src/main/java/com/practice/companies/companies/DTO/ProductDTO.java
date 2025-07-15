@@ -26,5 +26,5 @@ public class ProductDTO {
     private Integer companyId;
 
     private LocalDate createdDate, updatedDate;
-    private List<ProductItemDTO> items;
+    private List<ProductItemSummary> items;
 }

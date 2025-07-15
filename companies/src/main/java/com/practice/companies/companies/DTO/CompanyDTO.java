@@ -27,5 +27,5 @@ public class CompanyDTO {
     @URL(message = "Url is Invalid")
     private String website_url;
     private LocalDate createdDate, updatedDate;
-    private List<ProductDTO> products;
+    private List<ProductSummary> products;
 }

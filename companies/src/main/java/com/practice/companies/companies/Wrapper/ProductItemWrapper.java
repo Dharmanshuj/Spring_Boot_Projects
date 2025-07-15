@@ -12,7 +12,7 @@ import java.util.List;
 @Setter
 public class ProductItemWrapper {
     @Valid
-    @NotEmpty(message = "ProductItem list cannot be empty")
+    @NotEmpty(message = "Item list cannot be empty")
     private List<ProductItemDTO> Items;
 
     @Valid

@@ -2,6 +2,7 @@ package com.practice.companies.companies.Service;
 
 import com.practice.companies.companies.DTO.DTOUtility;
 import com.practice.companies.companies.DTO.ProductItemDTO;
+import com.practice.companies.companies.DTO.ProductItemSummary;
 import com.practice.companies.companies.Entity.Product;
 import com.practice.companies.companies.Entity.ProductItem;
 import com.practice.companies.companies.ExectionHandling.NotFoundException;
@@ -11,8 +12,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.mail.MailProperties;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -84,8 +87,49 @@ public class ProductItemService {
             throw new NotFoundException("Products not found with IDs: " + missingProducts);
         }
 
-        List<ProductItem> items = dtos.stream().map(
-                dto -> mapper.toProductItemEntity(dto, productMap.get(dto.getProductId()))).toList();
+        List<ProductItem> updates = dtos.stream().map(dto -> {
+            ProductItem item = itemMap.get(dto.getId());
+            Product product = productMap.get(dto.getProductId());
 
+            ProductItem updated = mapper.toProductItemEntity(dto, product);
+            updated.setId(item.getId());
+            updated.setCreatedDate(item.getCreatedDate());
+            return updated;
+        }).toList();
+
+        return itemRepository.saveAll(updates).stream().map(mapper::toProductItemDTO).toList();
+    }
+
+    public void deleteItem(Integer id) {
+        ProductItem item = itemRepository.findByIdAndStatusTrue(id)
+                .orElseThrow(() -> new NotFoundException("No item found with ID: " + id));
+        item.setStatus(false);
+        item.setUpdatedDate(LocalDate.now());
+        itemRepository.save(item);
+    }
+
+    public void deleteAllItems(List<Integer> ids) {
+        List<ProductItem> items = itemRepository.findAllByIdInAndStatusTrue(ids);
+        Set<Integer> found = items.stream().map(ProductItem::getId).collect(Collectors.toSet());
+        List<Integer> missing = ids.stream().filter(id -> !found.contains(id)).toList();
+
+        if(!missing.isEmpty()) {
+            throw new NotFoundException("Items not found with IDs: " + missing);
+        }
+
+        items.forEach(item -> {
+            item.setStatus(false);
+            item.setUpdatedDate(LocalDate.now());
+        });
+
+        itemRepository.saveAll(items);
+    }
+
+    public List<ProductItemSummary> getAllItems(Integer id) {
+        List<ProductItem> items = itemRepository.findByProductIdAndStatusTrue(id);
+        if(items.isEmpty()) {
+            throw new NotFoundException("No product found with ID: " + id);
+        }
+        return items.stream().map(mapper::toProductItemSummary).toList();
     }
 }

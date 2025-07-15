@@ -5,6 +5,8 @@ import com.practice.companies.companies.Entity.Product;
 import com.practice.companies.companies.Entity.ProductItem;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class DTOUtility {
     public CompanyDTO toCompanyDTO(Company entity) {
@@ -19,9 +21,11 @@ public class DTOUtility {
                 .createdDate(entity.getCreatedDate())
                 .updatedDate(entity.getUpdatedDate())
                 .products(entity.getProducts() != null ?
-                        entity.getProducts().stream().map(this::toProductDTO).toList() :
-                        null)
-                .build();
+                        entity.getProducts().stream()
+                                .filter(Product::getStatus)
+                                .map(this::toProductSummary)
+                                .toList() :
+                        List.of()).build();
     }
 
     public Company toCompanyEntity(CompanyDTO dto) {
@@ -48,7 +52,10 @@ public class DTOUtility {
                 .createdDate(entity.getCreatedDate())
                 .updatedDate(entity.getUpdatedDate())
                 .items(entity.getItems() != null ?
-                        entity.getItems().stream().map(this::toProductItemDTO).toList():
+                        entity.getItems().stream()
+                                .filter(ProductItem::getStatus)
+                                .map(this::toProductItemSummary)
+                                .toList() :
                         null)
                 .build();
     }
@@ -86,4 +93,29 @@ public class DTOUtility {
                 .product(product)
                 .build();
     }
+
+    // Summary for Product (id, name)
+    public ProductSummary toProductSummary(Product p) {
+        return new ProductSummary(p.getId(), p.getName());
+    }
+
+    // Summary for ProductItem (id, name)
+    public ProductItemSummary toProductItemSummary(ProductItem item) {
+        return new ProductItemSummary(item.getId(), item.getName());
+    }
+
+    // Summary: Product + List<ProductItemSummaryDTO>
+    public ProductWithItemSummary toProductWithItemSummary(Product product) {
+        return new ProductWithItemSummary(
+                product.getId(),
+                product.getName(),
+                product.getItems() != null ?
+                        product.getItems().stream()
+                                .filter(ProductItem::getStatus)
+                                .map(this::toProductItemSummary)
+                                .toList()
+                        : List.of()
+        );
+    }
+
 }
