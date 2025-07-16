@@ -94,17 +94,14 @@ public class DTOUtility {
                 .build();
     }
 
-    // Summary for Product (id, name)
     public ProductSummary toProductSummary(Product p) {
         return new ProductSummary(p.getId(), p.getName());
     }
 
-    // Summary for ProductItem (id, name)
     public ProductItemSummary toProductItemSummary(ProductItem item) {
         return new ProductItemSummary(item.getId(), item.getName());
     }
 
-    // Summary: Product + List<ProductItemSummaryDTO>
     public ProductWithItemSummary toProductWithItemSummary(Product product) {
         return new ProductWithItemSummary(
                 product.getId(),
