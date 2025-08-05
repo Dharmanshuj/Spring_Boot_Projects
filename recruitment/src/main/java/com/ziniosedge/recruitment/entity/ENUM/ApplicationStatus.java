@@ -1,0 +1,8 @@
+package com.ziniosedge.recruitment.entity.ENUM;
+
+public enum ApplicationStatus {
+    PROCESSING, INTERVIEWING, REJECTED, SELECTED,
+    HR_DISCUSSION, AWAITING_FOR_APPROVAL, APPROVED,
+    OFFER_RELEASED, OFFER_ACCEPTED, OFFER_REJECTED,
+    ONBOARDING, JOINED
+}
