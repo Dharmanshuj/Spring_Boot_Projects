@@ -18,8 +18,7 @@ public class Candidate {
     @Column(unique = true)
     private String email;
 
-    @ManyToOne
-    private User recruiter;
+    private Long recruiterId;
 
     private String phoneNumber;
 

@@ -18,11 +18,9 @@ public class ApplicationDetails {
     private String clientName;
     private LocalDate dateOfJoining;
 
-    @ManyToOne
-    private User recruiter;
+    private Long recruiterId;
 
-    @ManyToOne
-    private User hr;
+    private Long hrId;
 
     @Lob
     private String comments;
